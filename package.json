@@ -1,0 +1,11 @@
+{
+  "name": "poker-rules",
+  "version": "0.0.1",
+  "description": "Imlementation of poker rules",
+  "main": "poker.js",
+  "keywords": [
+    "poker"
+  ],
+  "author": "Alexei Bavelski",
+  "license": "MIT"
+}
