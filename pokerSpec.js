@@ -13,20 +13,18 @@ describe("BettingRound test suite", function () {
         expect(player1.amount).toEqual(80);
         expect(player2.amount).toEqual(90);
 
-        expect(round.call(0)).toEqual('wrong-player');
-        expect(round.check(1)).toEqual('call or fold');
+        expect(round.call(0)).toEqual({status: 'error', errorCode: 'wrong-player'});
+        expect(round.check(1)).toEqual({status: 'error', errorCode: 'call-or-fold'});
 
         var res1 = round.call(1);
         expect(res1.next).toEqual(0);
         expect(res1.status).toEqual('betting');
         expect(player2.amount).toEqual(80);
 
-        expect(round.check(1)).toEqual('wrong-player');
+        expect(round.check(1)).toEqual({status: 'error', errorCode: 'wrong-player'});
         var res2 = round.check(0);
         expect(res2.status).toEqual('round-done');
         expect(res2.next).toEqual(1);
     });
-
-
 
 });

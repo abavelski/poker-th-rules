@@ -64,6 +64,13 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 		return 'round-done';
 	};
 
+	var getError = function(errCode) {
+		return {
+			status : 'error',
+			errorCode : errCode
+		}
+	};
+
 	this.start = function() {
 		var i;
 
@@ -90,7 +97,7 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 
 	this.call = function(i) {
 		if (i!==move) {
-			return 'wrong-player';
+			return getError('wrong-player');
 		};
 		var callAmount = currentBet-players[i].bet;
 		players[i].amount-=callAmount;
@@ -106,10 +113,10 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 
 	this.check = function(i) {
 		if (i!==move) {
-			return 'wrong-player';
+			return getError('wrong-player');
 		};
 		if(currentBet!==players[i].bet) {
-			return 'call or fold';
+			return getError('call-or-fold');
 		};
 		players[i].said = true;
 		move= (move+1) % players.length;
@@ -121,10 +128,10 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 
 	this.raise = function(i, raiseAmount) {
 		if (i!==move) {
-			return 'wrong-player';
+			return getError('wrong-player');
 		};
 		if(currentBet!==players[i].bet) {
-			return 'call first';
+			return getError('call-first');
 		};
 		players[i].said = true;
 		players[i].amount-=raiseAmount;
@@ -138,7 +145,7 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 
 	this.fold = function(i) {
 		if (i!==move) {
-			return 'wrong-player';
+			return getError('wrong-player');
 		};
 		pot+=players[i].bet;
 		players.splice(i, 1);
