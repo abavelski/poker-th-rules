@@ -130,8 +130,8 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 		if (i!==move) {
 			return getError('wrong-player');
 		};
-		if(currentBet!==players[i].bet) {
-			return getError('call-first');
+		if(currentBet<=players[i].bet+raiseAmount) {
+			return getError('wrong-amount');
 		};
 		players[i].said = true;
 		players[i].amount-=raiseAmount;
