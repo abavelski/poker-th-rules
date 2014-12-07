@@ -3,7 +3,6 @@
 var Player = function(name, amount) {
 	this.name = name;
 	this.amount = amount;
-	this.bet = 0;
 };
 
 
@@ -13,7 +12,7 @@ var Deck = function() {
 		27,28,29,30,31,32,33,34,35,36,37,38,39,
 		40,41,42,43,44,45,46,47,48,49,50,51,52];
 
-	this.shuffleDeck = function() {
+	this.shuffleCards = function() {
 		var i = cards.length;
 		if ( i == 0 ) return false;
 		while ( --i ) {
@@ -25,32 +24,27 @@ var Deck = function() {
 		}
 	};
 
-	this.deal = function(players) {
+	this.dealPlayers = function(players) {
 		for (var i=0; i<players.length; i++) {
 			var player = players[i];
 			player.hand = [cards.shift(), cards.shift()];
 		}
-
 	};
 
-	this.flop = function(table) {
-		table.communityCards = [cards.shift(), cards.shift(), cards.shift()];
-	};
-
-	this.turn = function(table) {
-		table.communityCards.push(cards.shift());
-	};
-
-	this.river = function(table) {
-		table.communityCards.push(cards.shift());
-	};
-
-}
+	this.dealCard = function() {
+		return cards.shift();
+	}
+};
 
 var BettingRound = function(smBlindAmount, players, dealer) {
-	var currentBet = 0;
-	var pot = 0;
-	var move;
+	var currentBet = 0,
+		pot = 0,
+		move =	(dealer+3) % players.length,
+		initPlayer = function(player) {
+			player.bet = 0;
+			player.said = false;
+		};
+		players.map(initPlayer);
 
 	var checkStatus = function() {
 		if (players.length===1) {
@@ -71,6 +65,15 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 		}
 	};
 
+	var getResponse = function() {
+		return {
+			status : checkStatus(),
+			next : move,
+			pot : pot,
+			players : players
+		}
+	};
+
 	this.start = function() {
 		var i;
 
@@ -84,15 +87,19 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 
 		currentBet = smBlindAmount*2;
 
-		move =	3 % players.length;
+		pot+=smBlindAmount*3;
 		return {
 			status : 'betting',
 			next : move
 		};
 	};
 
-	this.getDealer = function() {
-		return dealer;
+	this.nextToMove = function() {
+		return move;
+	};
+
+	this.getPot = function() {
+		return pot;
 	};
 
 	this.call = function(i) {
@@ -100,14 +107,12 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 			return getError('wrong-player');
 		};
 		var callAmount = currentBet-players[i].bet;
+		pot+=callAmount;
 		players[i].amount-=callAmount;
 		players[i].bet+=callAmount;
 		players[i].said = true;
 		move= (move+1) % players.length;
-		return {
-			status : checkStatus(),
-			next : move
-		};
+		return getResponse();
 	};
 
 
@@ -120,52 +125,179 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 		};
 		players[i].said = true;
 		move= (move+1) % players.length;
-		return {
-			status : checkStatus(),
-			next : move
-		};
+		return getResponse();
 	};
 
 	this.raise = function(i, raiseAmount) {
 		if (i!==move) {
 			return getError('wrong-player');
 		};
-		if(currentBet<=players[i].bet+raiseAmount) {
+		if(players[i].bet+raiseAmount<=currentBet) {
 			return getError('wrong-amount');
 		};
 		players[i].said = true;
 		players[i].amount-=raiseAmount;
 		players[i].bet+=raiseAmount;
+		currentBet=players[i].bet;
+		pot+=raiseAmount;
 		move= (move+1) % players.length;
-		return {
-			status : checkStatus(),
-			next : move
-		};
+		return getResponse();
 	};
 
 	this.fold = function(i) {
 		if (i!==move) {
 			return getError('wrong-player');
 		};
-		pot+=players[i].bet;
 		players.splice(i, 1);
 		move= move % players.length;
-		return {
-			status : checkStatus(),
-			next : move
-		};
+		return getResponse();
 	}
 };
 
+var GameRound = function() {
+	var self = this,
+		deck = new Deck(),
+		dealer,
+		smBlind,
+		communityCards,
+		currentRound,
+		pot=0;
+
+	this.nextToMove = function() {
+		return self.players[currentRound.nextToMove()].name;
+	};
+	this.move = function(obj) {
+		var playerIndex=-1;
+		var response = {
+			currentRound : currentRound.name
+		};
+		for (var i=0;i<this.players.length;i++) {
+			if (this.players[i].name===obj.name) {
+				playerIndex = i;
+				break;
+			}
+		}
+		if (playerIndex===-1) {
+			response.error = 'unknown-player';
+			return response;
+		}
+
+		var result = currentRound[obj.action](playerIndex, obj.amount);
+		response.status = result.status;
+		if (result.status==='betting' || result.status==='error') {
+			response.next = self.players[currentRound.nextToMove()].name;
+		}
+		if (result.status==='winner-found' || result.status==='round-done') {
+			pot+=currentRound.getPot();
+			response.pot = pot;
+		}
+		if (result.errorCode) {
+			response.error = result.errorCode;
+		}
+		return response;
+	};
+
+	this.withPlayers = function(players) {
+		this.players = players;
+		return this;
+	};
+
+	this.withDealer = function(i) {
+		dealer = i;
+		return this;
+	};
+
+	this.withSmallBlind = function(s) {
+		smBlind = s;
+		return this;
+	};
+
+	this.preFlop = function() {
+		deck.shuffleCards();
+		deck.dealPlayers(this.players);
+		currentRound = new BettingRound(smBlind, self.players, dealer);
+		currentRound.name = 'preflop';
+		currentRound.start();
+        return currentRound;
+	};
+
+	var dealFlop = function() {
+		communityCards=[deck.dealCard(), deck.dealCard(), deck.dealCard()];
+		return communityCards;
+	};
+
+	this.getCommunityCards = function() {
+		return communityCards;
+	};
+
+	var dealCard = function() {
+		var card = deck.dealCard();
+		communityCards.push(card);
+		return card;
+	};
+
+
+	this.flop = function(){
+		dealFlop();
+		currentRound = new BettingRound(smBlind, self.players, dealer);
+		currentRound.name = 'flop';
+        return currentRound;
+	};
+
+	var newRound = function(name) {
+		dealCard();
+		currentRound = new BettingRound(smBlind, self.players, dealer);
+		currentRound.name = name;
+		return currentRound;
+	};
+
+	this.turn = function() {
+		return newRound('turn');
+	};
+	this.river = function() {
+		return newRound('river');
+	};
+
+
+};
+
+var Game = function() {
+	var self = this,
+		dealer= 0,
+		round = 1,
+		smBlind=10,
+		gameRound;
+
+	this.withPlayers = function(players) {
+		this.players = players;
+		return this;
+	};
+
+	this.withSmallBlind = function(s) {
+		smBlind = s;
+		return this;
+	};
+
+	this.start = function() {
+		gameRound = new GameRound();
+		gameRound.preFlop();
+
+	}
+
+};
+
 module.exports = {
-	newDeck : function() {
-		return new Deck();
-	},
 	newPlayer : function(name, amount) {
 		return new Player(name, amount);
 	},
 	newBettingRound : function(smBlindAmount, players, dealer) {
 		return new BettingRound(smBlindAmount, players, dealer);
+	},
+	newGameRound : function() {
+		return new GameRound();
+	},
+	newGame : function() {
+		return new Game();
 	}
 };
 
