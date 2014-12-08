@@ -258,18 +258,28 @@ var GameRound = function() {
 		return newRound('river');
 	};
 
+	this.getBettingRound = function() {
+		return currentRound.name;
+	}
+
 
 };
 
 var Game = function() {
 	var self = this,
-		dealer= 0,
-		round = 1,
+		dealer,
+		round = 0,
 		smBlind=10,
+		evaluate,
 		gameRound;
 
 	this.withPlayers = function(players) {
 		this.players = players;
+		return this;
+	};
+
+	this.withHandEvaluator = function(e) {
+		evaluate = e;
 		return this;
 	};
 
@@ -279,10 +289,63 @@ var Game = function() {
 	};
 
 	this.start = function() {
-		gameRound = new GameRound();
+		if(dealer===0) {
+			dealer= (dealer+1) % self.players.length;
+		} else {
+			dealer =0;
+		};
+		round++;
+		gameRound = new GameRound()
+			.withPlayers(self.players)
+			.withDealer(dealer)
+			.withSmallBlind(smBlind);
 		gameRound.preFlop();
+		return {
+			dealer: dealer,
+			round : round,
+			bettingRound: gameRound.getBettingRound(),
+			status : 'hands-dealt',
+			nextToMove : gameRound.nextToMove(),
+			players : this.players
+		}
+	};
 
-	}
+	this.move = function(obj) {
+		var newRound = function(pot) {
+			return {
+				pot : pot,
+				currentRound: gameRound.getBettingRound(),
+				communityCards : gameRound.getCommunityCards(),
+				nextToMove : gameRound.nextToMove(),
+				status : 'new-betting-round'
+			};
+		};
+
+		var res = gameRound.move(obj);
+		if (res.status==='round-done' && res.currentRound==='preflop') {
+			gameRound.flop();
+			res = newRound(res.pot);
+		} else if (res.status==='round-done' && res.currentRound==='flop') {
+			gameRound.turn();
+			res = newRound(res.pot);
+		} else if (res.status==='round-done' && res.currentRound==='turn') {
+			gameRound.river();
+			res = newRound(res.pot);
+		} else if (res.status==='round-done' && res.currentRound==='river') {
+			var winner = evaluate(gameRound.getCommunityCards(), this.players);
+			winner.amount+=res.pot;
+			res = {
+				status : 'showing-down',
+				communityCards : gameRound.getCommunityCards(),
+				players : this.players,
+				winner : winner.name
+			}
+
+		};
+		res.round = round;
+		return res;
+
+	};
 
 };
 

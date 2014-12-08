@@ -161,9 +161,6 @@ describe("Game round test suite", function () {
             .toEqual({ currentRound: 'river', status: 'round-done', pot: 120 });
     });
 
-
-
-
 });
 
 
@@ -174,10 +171,30 @@ describe("Game suite", function () {
 
         var game = poker.newGame()
                     .withPlayers(players)
-                    .withSmallBlind(10);
-        var started = game.start();
-        
+                    .withSmallBlind(10)
+                    .withHandEvaluator(function(cards, players){
+                                            return players[0];
+                                        });
 
+        console.log(game.start());
+        console.log(game.move({name :'player2', action:'call'}));
+        console.log(game.move({name :'player1', action:'check'}));
+        console.log(game.move({name :'player2', action:'check'}));
+        console.log(game.move({name :'player1', action:'check'}));
+        console.log(game.move({name :'player2', action:'check'}));
+        console.log(game.move({name :'player1', action:'check'}));
+        console.log(game.move({name :'player2', action:'check'}));
+        console.log(game.move({name :'player1', action:'check'}));
+
+        console.log(game.start());
+        console.log(game.move({name :'player1', action:'call'}));
+        console.log(game.move({name :'player2', action:'check'}));
+        console.log(game.move({name :'player1', action:'check'}));
+        console.log(game.move({name :'player2', action:'check'}));
+        console.log(game.move({name :'player1', action:'raise', amount: 20}));
+        console.log(game.move({name :'player2', action:'call'}));
+        console.log(game.move({name :'player1', action:'check'}));
+        console.log(game.move({name :'player2', action:'check'}));
 
     });
 
