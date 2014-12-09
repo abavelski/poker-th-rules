@@ -1,4 +1,5 @@
 var poker = require("./poker");
+var evaluate = require('./evaluator');
 
 describe("BettingRound test suite", function () {
 
