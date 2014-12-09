@@ -165,7 +165,7 @@ describe("Game round test suite", function () {
 
 
 describe("Game suite", function () {
-    it("2 players game", function () {
+    it("after game round amounts updated correct", function () {
         var players = [poker.newPlayer('player1', 100),
             poker.newPlayer('player2', 100)];
 
@@ -175,18 +175,25 @@ describe("Game suite", function () {
                     .withHandEvaluator(function(cards, players){
                                             return players[0];
                                         });
+        //full game round
+        game.newRound();
+        game.move({name :'player2', action:'call'});
+        game.move({name :'player1', action:'check'});
+        game.move({name :'player2', action:'check'});
+        game.move({name :'player1', action:'check'});
+        game.move({name :'player2', action:'check'});
+        game.move({name :'player1', action:'check'});
+        game.move({name :'player2', action:'check'});
+        var res = game.move({name :'player1', action:'check'});
+        //assertions
+        expect(res.status).toEqual('showing-down');
+        expect(res.winner).toEqual('player1');
+        expect(res.players[0].amount).toEqual(120);
+        expect(res.players[1].amount).toEqual(80);
 
-        console.log(game.start());
-        console.log(game.move({name :'player2', action:'call'}));
-        console.log(game.move({name :'player1', action:'check'}));
-        console.log(game.move({name :'player2', action:'check'}));
-        console.log(game.move({name :'player1', action:'check'}));
-        console.log(game.move({name :'player2', action:'check'}));
-        console.log(game.move({name :'player1', action:'check'}));
-        console.log(game.move({name :'player2', action:'check'}));
-        console.log(game.move({name :'player1', action:'check'}));
 
-        console.log(game.start());
+        /*
+        console.log(game.newRound());
         console.log(game.move({name :'player1', action:'call'}));
         console.log(game.move({name :'player2', action:'check'}));
         console.log(game.move({name :'player1', action:'check'}));
@@ -195,7 +202,50 @@ describe("Game suite", function () {
         console.log(game.move({name :'player2', action:'call'}));
         console.log(game.move({name :'player1', action:'check'}));
         console.log(game.move({name :'player2', action:'check'}));
+        */
+    });
 
+ it("fold check", function () {
+        var players = [poker.newPlayer('player1', 100),
+            poker.newPlayer('player2', 100)];
+
+        var game = poker.newGame()
+                    .withPlayers(players)
+                    .withSmallBlind(10)
+                    .withHandEvaluator(function(cards, players){
+                                            return players[0];
+                                        });
+        //full game round
+        game.newRound();
+        console.log(game.move({name :'player2', action:'fold'}));
+        console.log(players);
+
+        console.log(game.newRound());
+        //game.move({name :'player1', action:'check'});
+        //game.move({name :'player2', action:'check'});
+        //game.move({name :'player1', action:'check'});
+        //game.move({name :'player2', action:'check'});
+        //game.move({name :'player1', action:'check'});
+        //game.move({name :'player2', action:'check'});
+        //var res = game.move({name :'player1', action:'check'});
+        //assertions
+        //expect(res.status).toEqual('showing-down');
+        //expect(res.winner).toEqual('player1');
+        //expect(res.players[0].amount).toEqual(120);
+        //expect(res.players[1].amount).toEqual(80);
+
+
+        /*
+        console.log(game.newRound());
+        console.log(game.move({name :'player1', action:'call'}));
+        console.log(game.move({name :'player2', action:'check'}));
+        console.log(game.move({name :'player1', action:'check'}));
+        console.log(game.move({name :'player2', action:'check'}));
+        console.log(game.move({name :'player1', action:'raise', amount: 20}));
+        console.log(game.move({name :'player2', action:'call'}));
+        console.log(game.move({name :'player1', action:'check'}));
+        console.log(game.move({name :'player2', action:'check'}));
+        */
     });
 
 });

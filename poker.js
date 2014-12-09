@@ -271,7 +271,8 @@ var Game = function() {
 		round = 0,
 		smBlind=10,
 		evaluate,
-		gameRound;
+		gameRound,
+		roundPlayers;
 
 	this.withPlayers = function(players) {
 		this.players = players;
@@ -288,7 +289,8 @@ var Game = function() {
 		return this;
 	};
 
-	this.start = function() {
+	this.newRound = function() {
+		roundPlayers = self.players.slice(0);
 		if(dealer===0) {
 			dealer= (dealer+1) % self.players.length;
 		} else {
@@ -296,7 +298,7 @@ var Game = function() {
 		};
 		round++;
 		gameRound = new GameRound()
-			.withPlayers(self.players)
+			.withPlayers(roundPlayers)
 			.withDealer(dealer)
 			.withSmallBlind(smBlind);
 		gameRound.preFlop();
@@ -306,7 +308,7 @@ var Game = function() {
 			bettingRound: gameRound.getBettingRound(),
 			status : 'hands-dealt',
 			nextToMove : gameRound.nextToMove(),
-			players : this.players
+			players : roundPlayers
 		}
 	};
 
@@ -332,15 +334,19 @@ var Game = function() {
 			gameRound.river();
 			res = newRound(res.pot);
 		} else if (res.status==='round-done' && res.currentRound==='river') {
-			var winner = evaluate(gameRound.getCommunityCards(), this.players);
+			var winner = evaluate(gameRound.getCommunityCards(), roundPlayers);
 			winner.amount+=res.pot;
 			res = {
 				status : 'showing-down',
 				communityCards : gameRound.getCommunityCards(),
-				players : this.players,
+				players : roundPlayers,
 				winner : winner.name
 			}
 
+		} else if (res.status === 'winner-found'){
+			var winner = roundPlayers[0];
+			winner.amount+=res.pot;
+			res.winner = winner.name;
 		};
 		res.round = round;
 		return res;
