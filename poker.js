@@ -274,8 +274,18 @@ var Game = function() {
 		gameRound,
 		roundPlayers;
 
-	var findWinner = function(cards, players) {
-
+	this.findWinner = function(cards, players) {
+		var res, max = 0;
+		for (var i =0; i<players.length; i++) {
+			var hand = cards.slice(0).concat(players[i].hand);
+			var playerRes = evaluate(hand);
+				if (max<playerRes.score) {
+					res = playerRes;
+					res.winner = players[i];
+					max = playerRes.score;
+				}
+		}
+		return res;
 	};
 
 	this.withPlayers = function(players) {
@@ -338,7 +348,7 @@ var Game = function() {
 			gameRound.river();
 			res = newRound(res.pot);
 		} else if (res.status==='round-done' && res.currentRound==='river') {
-			var winner = findWinner(gameRound.getCommunityCards(), roundPlayers);
+			var winner = this.findWinner(gameRound.getCommunityCards(), roundPlayers).winner;
 			winner.amount+=res.pot;
 			res = {
 				status : 'showing-down',
