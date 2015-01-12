@@ -9,10 +9,20 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 		players.map(initPlayer);
 
 	var checkStatus = function() {
+		var i;
 		if (players.length===1) {
 			return 'winner-found';	
 		}
-		for (var i=0; i<players.length; i++) {
+		var notAllIn=0;
+		for (i=0; i<players.length; i++) {
+			if (!players[i].allIn) {
+				notAllIn++;
+			}
+		}
+		if (notAllIn<=1) {
+			return 'betting-done';
+		}
+		for (i=0; i<players.length; i++) {
 			if (players[i].bet!==currentBet || !players[i].said) {
 				return 'betting';
 			}
@@ -37,6 +47,9 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 	};
 
 	this.start = function() {
+		
+	
+
 		var i;
 
 		i = (dealer+1) % players.length;
@@ -69,10 +82,18 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 			return getError('wrong-player');
 		};
 		var callAmount = currentBet-players[i].bet;
-		pot+=callAmount;
-		players[i].amount-=callAmount;
-		players[i].bet+=callAmount;
-		players[i].said = true;
+		if (callAmount>players[i].amount) {
+			pot+=players[i].amount;
+			players[i].bet+=players[i].amount;;
+			players[i].amount=0;
+			players[i].allIn=true;
+		} else {
+			pot+=callAmount;
+			players[i].amount-=callAmount;
+			players[i].bet+=callAmount;
+			players[i].said = true;
+		}
+		
 		move= (move+1) % players.length;
 		return getResponse();
 	};
@@ -97,8 +118,14 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 		if(players[i].bet+raiseAmount<=currentBet) {
 			return getError('wrong-amount');
 		};
+		if (players[i].amount<raiseAmount) {
+			return getError('not-enough-money');
+		}
 		players[i].said = true;
 		players[i].amount-=raiseAmount;
+		if  (players[i].amount===0) {
+			players[i].allIn = true;
+		}
 		players[i].bet+=raiseAmount;
 		currentBet=players[i].bet;
 		pot+=raiseAmount;
@@ -116,6 +143,6 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 	}
 };
 
-exports function(smBlindAmount, players, dealer) {
+module.exports = function(smBlindAmount, players, dealer) {
 		return new BettingRound(smBlindAmount, players, dealer);
 	};
