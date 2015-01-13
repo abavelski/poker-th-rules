@@ -37,10 +37,19 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 		}
 	};
 
+	var checkMove = function() {
+		//var tmp = move;
+		if (players[move].allIn) {
+			move= (move+1) % players.length;
+		}
+		//while (players[move].allIn || )
+		return move;
+	};
+
 	var getResponse = function() {
 		return {
 			status : checkStatus(),
-			next : move,
+			next : checkMove(),
 			pot : pot,
 			players : players
 		}

@@ -2,7 +2,7 @@ var newBettingRound = require('../src/betting-round.js');
 
 
 describe("BettingRound test suite", function () {
-    var player1, player2, player3, player4;
+    var player1, player2, player3, player4, player5;
     var newPlayer = function(name, amount) {
         return {
             name : name,
@@ -15,6 +15,7 @@ describe("BettingRound test suite", function () {
         player2 = newPlayer('player2', 100);
         player3 = newPlayer('player3', 100);
         player4 = newPlayer('player4', 300);
+        player5 = newPlayer('player5', 300);
     });
 
     it("2 players bet", function () {
@@ -66,13 +67,25 @@ describe("BettingRound test suite", function () {
     });
 
     it("betting-done when one of the players allIn and the other calls", function () {
-        var players = [player1, player4];        
+        var players = [player1, player4];
         var round = newBettingRound(10, players, 1);
         round.start();
-        console.log(round.raise(0, 90));
-        console.log(round.call(1));
-        //expect(player4.amount).toEqual(0);
-        //expect(player4.allIn).toBe(true);
+        round.raise(0, 90); //allIn
+        expect(round.call(1).status).toEqual('betting-done');
+        expect(player1.amount).toEqual(0);
+        expect(player1.allIn).toBe(true);
+    });
+
+    it("3 players, one allIn, 2 continue betting", function () {
+        var players = [player1, player4, player5];
+        var round = newBettingRound(10, players, 0);
+        expect(round.start().next).toEqual(0);
+        expect(round.raise(0, 100).status).toEqual('betting'); //allIn
+        expect(player1.allIn).toEqual(true);
+        expect(round.raise(1, 150).next).toEqual(2);
+        var st = round.raise(2, 250);
+        expect(st.next).toEqual(1);
+        expect(st.status).toEqual('betting');
     });
 
 
