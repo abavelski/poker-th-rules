@@ -23,7 +23,7 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 			return 'betting-done';
 		}
 		for (i=0; i<players.length; i++) {
-			if (players[i].bet!==currentBet || !players[i].said) {
+			if ((players[i].bet!==currentBet && !players[i].allIn) || !players[i].said) {
 				return 'betting';
 			}
 		}
@@ -38,11 +38,13 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 	};
 
 	var checkMove = function() {
-		//var tmp = move;
+		var tmp = move;
 		if (players[move].allIn) {
 			move= (move+1) % players.length;
 		}
-		//while (players[move].allIn || )
+		while (players[move].allIn && tmp!==move) {
+			move= (move+1) % players.length;
+		}
 		return move;
 	};
 
@@ -56,9 +58,6 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 	};
 
 	this.start = function() {
-		
-	
-
 		var i;
 
 		i = (dealer+1) % players.length;
@@ -78,14 +77,6 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 		};
 	};
 
-	this.nextToMove = function() {
-		return move;
-	};
-
-	this.getPot = function() {
-		return pot;
-	};
-
 	this.call = function(i) {
 		if (i!==move) {
 			return getError('wrong-player');
@@ -96,6 +87,7 @@ var BettingRound = function(smBlindAmount, players, dealer) {
 			players[i].bet+=players[i].amount;;
 			players[i].amount=0;
 			players[i].allIn=true;
+			players[i].said = true;
 		} else {
 			pot+=callAmount;
 			players[i].amount-=callAmount;

@@ -26,7 +26,7 @@ describe("BettingRound test suite", function () {
         expect(round.start().next).toEqual(1);
         expect(player1.amount).toEqual(80);
         expect(player2.amount).toEqual(90);
-        expect(round.call(0)).toEqual({status: 'error', errorCode: 'wrong-player'});
+
         expect(round.check(1)).toEqual({status: 'error', errorCode: 'call-or-fold'});
 
         var res1 = round.call(1);
@@ -38,6 +38,13 @@ describe("BettingRound test suite", function () {
         var res2 = round.check(0);
         expect(res2.status).toEqual('round-done');
         expect(res2.next).toEqual(1);
+    });
+
+    it("wrong-player error raised when wrong player tries to move", function () {
+        var players = [player1, player2];        
+        var round = newBettingRound(10, players, 0);
+        expect(round.start().next).toEqual(1);        
+        expect(round.call(0)).toEqual({status: 'error', errorCode: 'wrong-player'});        
     });
 
     it("cannot raise more than amount", function () {
@@ -76,7 +83,7 @@ describe("BettingRound test suite", function () {
         expect(player1.allIn).toBe(true);
     });
 
-    it("3 players, one allIn, 2 continue betting", function () {
+    it("3 players, first allIn, 2 continue betting skipping the first", function () {
         var players = [player1, player4, player5];
         var round = newBettingRound(10, players, 0);
         expect(round.start().next).toEqual(0);
@@ -88,7 +95,26 @@ describe("BettingRound test suite", function () {
         expect(st.status).toEqual('betting');
     });
 
+    it("4 players, 2 allIn, 2 continue betting skipping allIn players", function () {
+        var players = [player1, player2, player4, player5];
+        var round = newBettingRound(10, players, 0);
+        expect(round.start().next).toEqual(3);
+        expect(round.raise(3, 200).status).toEqual('betting');
+        //player1 allIn
+        expect(round.call(0).next).toEqual(1);
+        expect(player1.allIn).toEqual(true);
+        expect(player1.said).toEqual(true);
+        expect(player1.amount).toEqual(0);
+        //player2 allIn
+        expect(round.call(1).next).toEqual(2);
+        expect(player2.allIn).toEqual(true);
+        expect(player2.said).toEqual(true);
+        expect(player2.amount).toEqual(0);
 
+        expect(round.raise(2, 250).next).toEqual(3);
+        expect(round.raise(3, 80).next).toEqual(2);
+        expect(round.call(2).status).toEqual('round-done');
+    });
 
     it("3 players, raise, call, call", function () {
         var players = [player1, player2, player3];
