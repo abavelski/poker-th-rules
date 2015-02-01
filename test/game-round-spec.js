@@ -87,17 +87,17 @@ describe("Game round test suite", function () {
         expect(players[0].amount).toEqual(80);
         expect(players[1].amount).toEqual(80);
 
-        console.log(gameRound.move({name: 'player2', action: 'check'}));
-        //expect(gameRound.move({name: 'player2', action: 'check'})).toEqual({ currentRound: 'flop', status: 'betting', next: 'player1' });
-        //expect(gameRound.move({name: 'player1', action: 'check'})).toEqual({ currentRound: 'flop', status: 'round-done', pot: 40 });
+        //console.log(gameRound.move({name: 'player2', action: 'check'}));
+        expect(gameRound.move({name: 'player2', action: 'check'})).toEqual({ currentRound: 'flop', status: 'betting', next: 'player1' });
+        expect(gameRound.move({name: 'player1', action: 'check'})).toEqual({ currentRound: 'flop', status: 'round-done', pot: 40 });
 
-        //gameRound.turn();
-        //expect(gameRound.move({name: 'player2', action: 'raise', amount: 20})).toEqual({ currentRound: 'turn', status: 'betting', next: 'player1' });
-        //expect(gameRound.move({name: 'player1', action: 'call'})).toEqual({ currentRound: 'turn', status: 'round-done', pot: 80 });
+        gameRound.turn();
+        expect(gameRound.move({name: 'player2', action: 'raise', amount: 20})).toEqual({ currentRound: 'turn', status: 'betting', next: 'player1' });
+        expect(gameRound.move({name: 'player1', action: 'call'})).toEqual({ currentRound: 'turn', status: 'round-done', pot: 80 });
 
-        //gameRound.river();
-        //expect(gameRound.move({name: 'player2', action: 'raise', amount: 20})).toEqual({ currentRound: 'river', status: 'betting', next: 'player1' });
-        //expect(gameRound.move({name: 'player1', action: 'call'})).toEqual({ currentRound: 'river', status: 'round-done', pot: 120 });
+        gameRound.river();
+        expect(gameRound.move({name: 'player2', action: 'raise', amount: 20})).toEqual({ currentRound: 'river', status: 'betting', next: 'player1' });
+        expect(gameRound.move({name: 'player1', action: 'call'})).toEqual({ currentRound: 'river', status: 'round-done', pot: 120 });
     });
 
 });

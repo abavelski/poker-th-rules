@@ -72,11 +72,16 @@ var BettingRound = function() {
 	};
 };
 
-BettingRound.prototype.start = function() {
+BettingRound.prototype.init = function() {
 		currentBet = 0;
 		pot = 0;
 		move =	(dealer+3) % players.length;
 		players.map(initPlayer);
+		return this;
+};
+
+BettingRound.prototype.start = function() {
+
 		var i;
 
 		i = (dealer+1) % players.length;

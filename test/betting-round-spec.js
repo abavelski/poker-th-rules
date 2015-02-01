@@ -16,7 +16,7 @@ describe("BettingRound test suite", function () {
     it("2 players bet", function () {
         var players = [player1, player2];
         
-        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0);
+        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0).init();
 
         expect(round.start().next).toEqual(1);
         expect(player1.amount).toEqual(80);
@@ -37,21 +37,21 @@ describe("BettingRound test suite", function () {
 
     it("wrong-player error raised when wrong player tries to move", function () {
         var players = [player1, player2];        
-        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0);
+        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0).init();
         expect(round.start().next).toEqual(1);        
         expect(round.call(0)).toEqual({status: 'error', errorCode: 'wrong-player'});        
     });
 
     it("cannot raise more than amount", function () {
         var players = [player1, player2];        
-        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0);
+        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0).init();
         round.start();
         expect(round.raise(1, 100)).toEqual({status: 'error', errorCode: 'not-enough-money'});        
     });    
 
     it("call on a bigger amount result in allIn", function () {
         var players = [player1, newPlayer('player2', 300)];        
-        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0);
+        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0).init();
         round.start();
         round.raise(1,200);
         round.call(0);
@@ -61,7 +61,7 @@ describe("BettingRound test suite", function () {
 
     it("raise on all money results in allIn", function () {
         var players = [player1, player4];        
-        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0);
+        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0).init();
         round.start();
         round.raise(1,290);
         expect(player4.amount).toEqual(0);
@@ -70,7 +70,7 @@ describe("BettingRound test suite", function () {
 
     it("betting-done when one of the players allIn and the other calls", function () {
         var players = [player1, player4];
-        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(1);
+        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(1).init();
         round.start();
         round.raise(0, 90); //allIn
         expect(round.call(1).status).toEqual('betting-done');
@@ -80,7 +80,7 @@ describe("BettingRound test suite", function () {
 
     it("3 players, first allIn, 2 continue betting skipping the first", function () {
         var players = [player1, player4, player5];
-        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0);
+        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0).init();
         expect(round.start().next).toEqual(0);
         expect(round.raise(0, 100).status).toEqual('betting'); //allIn
         expect(player1.allIn).toEqual(true);
@@ -92,7 +92,7 @@ describe("BettingRound test suite", function () {
 
     it("4 players, 2 allIn, 2 continue betting skipping allIn players", function () {
         var players = [player1, player2, player4, player5];
-        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0);
+        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0).init();
         expect(round.start().next).toEqual(3);
         expect(round.raise(3, 200).status).toEqual('betting');
         //player1 allIn
@@ -114,7 +114,7 @@ describe("BettingRound test suite", function () {
     it("3 players, raise, call, call", function () {
         var players = [player1, player2, player3];
 
-        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0);
+        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0).init();
         expect(round.start().next).toEqual(0);
         expect(player1.amount).toEqual(100);
         expect(player2.amount).toEqual(90);
@@ -135,7 +135,7 @@ describe("BettingRound test suite", function () {
     it("3 players, raise, fold, fold", function () {
         var players = [player1, player2, player3];
 
-        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0);
+        var round = newBettingRound().withSmallBlind(10).withPlayers(players).withDealer(0).init();
         expect(round.start().next).toEqual(0);
         expect(player1.amount).toEqual(100);
         expect(player2.amount).toEqual(90);

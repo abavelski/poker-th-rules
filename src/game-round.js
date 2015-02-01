@@ -63,7 +63,7 @@ var GameRound = function() {
 		deck.shuffleCards();
 		deck.dealPlayers(this.players);
 
-		currentRound = newBettingRound().withSmallBlind(smBlind).withPlayers(self.players).withDealer(dealer);
+		currentRound = newBettingRound().withSmallBlind(smBlind).withPlayers(self.players).withDealer(dealer).init();
 		currentRound.name = 'preflop';
 		currentRound.start();
         return currentRound;
@@ -87,14 +87,14 @@ var GameRound = function() {
 
 	this.flop = function(){
 		dealFlop();
-		currentRound = newBettingRound().withSmallBlind(smBlind).withPlayers(self.players).withDealer(dealer);
+		currentRound = newBettingRound().withSmallBlind(smBlind).withPlayers(self.players).withDealer(dealer).init();
 		currentRound.name = 'flop';
         return currentRound;
 	};
 
 	var newRound = function(name) {
 		dealCard();
-		currentRound = newBettingRound().withSmallBlind(smBlind).withPlayers(self.players).withDealer(dealer);
+		currentRound = newBettingRound().withSmallBlind(smBlind).withPlayers(self.players).withDealer(dealer).init();
 		currentRound.name = name;
 		return currentRound;
 	};
