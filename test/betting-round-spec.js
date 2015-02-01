@@ -1,14 +1,9 @@
-var newBettingRound = require('../src/betting-round.js');
+var newBettingRound = require('../src/betting-round.js'),
+    newPlayer = require('../src/player.js');
 
 
 describe("BettingRound test suite", function () {
     var player1, player2, player3, player4, player5;
-    var newPlayer = function(name, amount) {
-        return {
-            name : name,
-            amount : amount
-        }
-    }
 
     beforeEach(function() {
         player1 = newPlayer('player1', 100);

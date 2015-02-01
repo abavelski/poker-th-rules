@@ -6,11 +6,10 @@ var initPlayer = function(player) {
 };
 
 var checkStatus = function() {
-	var i;
+	var i, notAllIn =0;
 	if (players.length===1) {
 		return 'winner-found';	
 	}
-	var notAllIn=0;
 	for (i=0; i<players.length; i++) {
 		if (!players[i].allIn) {
 			notAllIn++;
@@ -57,7 +56,6 @@ var getResponse = function() {
 };
 
 var BettingRound = function() {
-
 	this.withSmallBlind = function(_smBlindAmount) {
 		smBlindAmount = _smBlindAmount;
 		return this;
@@ -162,6 +160,15 @@ BettingRound.prototype.raise = function(i, raiseAmount) {
 	move= (move+1) % players.length;
 	return getResponse();
 };
+
+BettingRound.prototype.nextToMove = function() {
+	return move;
+};
+
+BettingRound.prototype.getPot = function() {
+	return pot;
+};
+
 
 module.exports = function() {
 	return new BettingRound();

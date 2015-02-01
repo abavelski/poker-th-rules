@@ -29,4 +29,4 @@ var Deck = function() {
 	}
 };
 
-exports function() { return new Deck };
+module.exports =function() { return new Deck };
