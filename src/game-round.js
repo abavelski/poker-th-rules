@@ -8,11 +8,14 @@ var GameRound = function() {
 		smBlind,
 		communityCards,
 		currentRound,
-		pot=0;
+		pot=0,
+		pots = [];
+
 
 	this.nextToMove = function() {
 		return self.players[currentRound.nextToMove()].name;
 	};
+
 	this.move = function(obj) {
 		var playerIndex=-1;
 		var response = {
@@ -34,7 +37,7 @@ var GameRound = function() {
 		if (result.status==='betting' || result.status==='error') {
 			response.next = self.players[currentRound.nextToMove()].name;
 		}
-		if (result.status==='winner-found' || result.status==='round-done') {
+		if (result.status==='winner-found' || result.status==='round-done' ) {
 			pot+=currentRound.getPot();
 			response.pot = pot;
 		}
@@ -66,7 +69,6 @@ var GameRound = function() {
 		currentRound = newBettingRound().withSmallBlind(smBlind).withPlayers(self.players).withDealer(dealer).init();
 		currentRound.name = 'preflop';
 		currentRound.start();
-        return currentRound;
 	};
 
 	var dealFlop = function() {
@@ -96,14 +98,13 @@ var GameRound = function() {
 		dealCard();
 		currentRound = newBettingRound().withSmallBlind(smBlind).withPlayers(self.players).withDealer(dealer).init();
 		currentRound.name = name;
-		return currentRound;
 	};
 
 	this.turn = function() {
-		return newRound('turn');
+		newRound('turn');
 	};
 	this.river = function() {
-		return newRound('river');
+		newRound('river');
 	};
 
 	this.getBettingRound = function() {
